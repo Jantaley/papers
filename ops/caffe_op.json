@@ -1,0 +1,2577 @@
+{
+    "Pooling": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "对输入x做Pooling，输出y",
+            "limits": "支持float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "对输入x做Pooling，输出y",
+            "limits": "支持float16"
+        },
+        "pool": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "pooling的类型，包括两种：\n•MAX（取值为0），默认为MAX\n•AVE（取值为1）",
+            "limits": "支持配置0或1"
+        },
+        "kernel_size": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "kernel大小",
+            "limits": "当global_pooling==False,pool==1，x_w(Padding后)>kernel_w时，有如下约束：\n1. Filter_h*filter_w*32+feature_w*(31*stride_h+filter_w)<=32768\n2. 满足kernel_size(kernel_h,kernel_w)配置范围在1~255"
+        },
+        "kernel_h": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "kernel高。(在global_pooling==False时，kernel_size、kernel_h/kernel_w是二选一的，不能两者都提供）",
+            "limits": "当global_pooling==False,pool==1，x_w(Padding后)>kernel_w时，有如下约束：\n1. Filter_h*filter_w*32+feature_w*(31*stride_h+filter_w)<=32768\n2. 满足kernel_size(kernel_h,kernel_w)配置范围在1~255"
+        },
+        "kernel_w": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "kernel宽",
+            "limits": "当global_pooling==False,pool==1，x_w(Padding后)>kernel_w时，有如下约束：\n1. Filter_h*filter_w*32+feature_w*(31*stride_h+filter_w)<=32768\n2. 满足kernel_size(kernel_h,kernel_w)配置范围在1~255"
+        },
+        "stride": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "stride (在高和宽方向)（default = 1）（如果提供了Stride_h，则优先取值Stride_h和Stride_w)",
+            "limits": "支持，配置范围1~63，且stride <= 2 * kernel_size"
+        },
+        "stride_h": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "stride高，默认值为1",
+            "limits": "支持，配置范围1~63，且stride <= 2 * kernel_size"
+        },
+        "stride_w": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "stride宽，默认值为1",
+            "limits": "支持，配置范围1~63，且stride <= 2 * kernel_size"
+        },
+        "pad": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "padding大小(在高和宽方向)（default = 0），如果提供了Pad_h，则以Pad_h为准",
+            "limits": "pad<kernel"
+        },
+        "pad_h": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "padding高(默认值 0)",
+            "limits": "pad<kernel"
+        },
+        "pad_w": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "padding宽(默认值 0)",
+            "limits": "pad<kernel"
+        },
+        "global_pooling": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "默认为false，是否全平面做",
+            "limits": "支持配置True或False"
+        },
+        "round_mode": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "pooling ceil的模式\n•0:DOMI_POOLING_CEIL，默认为0\n•1:DOMI_POOLING_FLOOR",
+            "limits": "支持配置0或1"
+        }
+    },
+    "Eltwise": {
+        "x": {
+            "classify": "DYNAMIC_INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "输入tensor，tensor的数据类型和shape必须相同，其Tensor的size最大支持32",
+            "limits": "支持float16，bottom num<=32"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "输出tensor，与输入tensor的数据类型和shape相同，对输入Tensor做element-wise的操作，加、乘、求最大",
+            "limits": "支持float16"
+        },
+        "operation": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "element-wise的操作：加、乘、求最大，取值如下：\n•0:product\n•1:sum，默认值为1\n•2:max",
+            "limits": "支持，配置范围0~2"
+        },
+        "coeff": {
+            "classify": "ATTR",
+            "type_range": "ListFloat",
+            "required": false,
+            "doc": "如果输入，则长度必须等于bottom NUm。默认为空，在sum时乘以对应的系数，默认值为{}",
+            "limits": "支持，配置时其向量长度必须等于bottom num"
+        }
+    },
+    "InnerProduct": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "输入tensor",
+            "limits": "float16"
+        },
+        "w": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "weight的tensor",
+            "limits": "float16"
+        },
+        "b": {
+            "classify": "OPTIONAL_INPUT",
+            "type_range": "float16,float32",
+            "required": false,
+            "doc": "bias",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "输出tensor",
+            "limits": "float16"
+        },
+        "num_output": {
+            "classify": "ATTR",
+            "type_range": "Int",
+            "required": true,
+            "doc": "InnerProduct后的神经元数量",
+            "limits": "最大支持32768"
+        },
+        "transpose": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "是否转置，默认False",
+            "limits": "True或者False"
+        },
+        "bias_term": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "是否有bias，默认为True",
+            "limits": "True或者False"
+        },
+        "axis": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "InnerProduct的轴，当前支持1或者2。",
+            "limits": 1
+        }
+    },
+    "Softmax": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16, float32",
+            "required": true,
+            "doc": "输入Tensor",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16, float32",
+            "required": true,
+            "doc": "输出Tensor",
+            "limits": "float16"
+        },
+        "axis": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "axis : softmax的轴",
+            "limits": "vector c<=16384(cs)/24576(ES)tensor c<=4096"
+        }
+    },
+    "ReLU ，LeakyReLU，RReLU": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16, float32",
+            "required": true,
+            "doc": "输入",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16, float32",
+            "required": true,
+            "doc": "输出y = max(0, x) +negative_slope * min(0, x)",
+            "limits": "float16"
+        },
+        "negative_slope": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认为0，负值的斜率",
+            "limits": "float16"
+        }
+    },
+    "Proposal": {
+        "cls_prob": {
+            "classify": "INPUT",
+            "type_range": "float16,fp32",
+            "required": true,
+            "doc": "前景和背景的概率，[batch,2*num_anchors,height,width] ，*2表示背景和前景概率（第一个是背景概率（bg prob），第二个是前景概率（fg probs） 。",
+            "limits": "float16"
+        },
+        "bbox_delta": {
+            "classify": "INPUT",
+            "type_range": "float16,fp32",
+            "required": true,
+            "doc": "预选框位置，表示 bbox的回归参数(Preselected box position)，（batch,num_anchors*4,height,Width）",
+            "limits": "float16"
+        },
+        "im_info": {
+            "classify": "INPUT",
+            "type_range": "-",
+            "required": false,
+            "doc": "输入图片的大小（高和宽），默认值为{375, 1240}",
+            "limits": "-"
+        },
+        "rois": {
+            "classify": "OUTPUT",
+            "type_range": "float16,fp32",
+            "required": true,
+            "doc": "输出框信息，Tensor[batch, 5, N]，其中N 是post_nms_topn对齐到16的倍数的值，5表示（batchID ,x1,y1,x2,y2,），实际每个batch按actual_rois_num输出",
+            "limits": "float16"
+        },
+        "actual_rois_num": {
+            "classify": "OUTPUT",
+            "type_range": "int32",
+            "required": false,
+            "doc": "[batch，8]，只有第一个有效，数据类型是int32，实际每个batch输出的bbox数量",
+            "limits": "int32"
+        },
+        "feat_stride": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": true,
+            "doc": "滑块滑动的大小，默认值16",
+            "limits": "-"
+        },
+        "base_size": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "generate_anchors中生成基本框的大小，默认值16",
+            "limits": "-"
+        },
+        "min_size": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "box的最小大小，默认值:{16,16}",
+            "limits": "-"
+        },
+        "ratio": {
+            "classify": "ATTR",
+            "type_range": "ListFloat",
+            "required": false,
+            "doc": "generate_anchors中生成框的高宽比例，默认值为[0.5,1,2]",
+            "limits": "-"
+        },
+        "scale": {
+            "classify": "ATTR",
+            "type_range": "ListFloat",
+            "required": false,
+            "doc": "generate_anchors中生成框的高宽相对于base_size的大小，默认值为{8,16,32}",
+            "limits": "-"
+        },
+        "pre_nms_topn": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "Topk中的K，在float16场景下，非昇腾AI处理器场景中最大为6008，昇腾AI处理器场景中最大3008；当采用FP32时，非昇腾AI处理器场景中最大为3004，昇腾AI处理器场景中最大1502（默认值1502）",
+            "limits": "不超过1502"
+        },
+        "post_nms_topn": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "最终的输出数量，非昇腾AI处理器场景中最大为6000，昇腾AI处理器场景中最大3000；当采用FP32时，非昇腾AI处理器场景中最大为3000，昇腾AI处理器场景中最大1502（默认值304）",
+            "limits": "不超过1502"
+        },
+        "iou_threshold": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "交并比（Intersection over Union）的阈值，必须是 (0,1]，默认为(0.7)",
+            "limits": "(0,1]"
+        },
+        "output_actual_rois_num": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "是否输出actual_rois_num：\n•False：不输出，默认为False\n•True：输出",
+            "limits": "-"
+        }
+    },
+    "BatchNorm": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "输入tensor",
+            "limits": "-"
+        },
+        "mean": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "均值",
+            "limits": "float16"
+        },
+        "variance": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "方差",
+            "limits": "float16"
+        },
+        "scale_factor": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "滑动平均的衰减系数，用于前一次计算的mean和variance的影响(除以此值)。",
+            "limits": "float16"
+        },
+        "scale": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": false,
+            "doc": "接口保留",
+            "limits": "-"
+        },
+        "offset": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": false,
+            "doc": "接口保留",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": false,
+            "doc": "输出tensor",
+            "limits": "float16"
+        },
+        "eps": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "分母附加值，防止除以方差时出现除0操作，默认为1e-5",
+            "limits": "支持配置"
+        },
+        "use_global_stats": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "是否使用mean variance参数，固定取值为True",
+            "limits": "支持True"
+        }
+    },
+    "ROIPooling": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "输入feature Map[batch,C,H,W]",
+            "limits": "float16;且h和w随着pooled_h/pooled_w取值不同，其范围也不相同：\n•pooled_h=pooled_w:2,17:h和w<=50\n•pooled_h=pooled_w:4,5,10-16,h和w<=70\n•pooled_h=pooled_w:7,8,h和w<=80\n•pooled_h=pooled_w:3,h和w<=60\n•pooled_h=pooled_w:18-20, h和w<=40"
+        },
+        "rois": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "ROIS的输入[batch,5,N]，其中的N必须是16的倍数。",
+            "limits": "支持float16"
+        },
+        "roi_actual_num": {
+            "classify": "INPUT",
+            "type_range": "int",
+            "required": false,
+            "doc": "Tensor的Shape为[batch,8]，表示每个batch实际的rois数量",
+            "limits": "int32"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "从feature map中根据rois 的坐标crop出对应部分后再根据输出size的配置进行max pooling[batch*N,C,pooled_h,pooled_w]",
+            "limits": "支持float16"
+        },
+        "pooled_h": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": true,
+            "doc": "roi_pooling的高，必须大于0",
+            "limits": "[2,20]"
+        },
+        "pooled_w": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": true,
+            "doc": "roi_pooling的宽，必须大于0",
+            "limits": "[2,20]"
+        },
+        "spatial_scale": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "rois映射到原始Feature Map的缩放比例系数,如果有spatial_scale_h和spatial_scale_w，则以spatial_scale_h和spatial_scale_w为准，如果不提供spatial_scale_h和spatial_scale_w，则在caffe插件中把spatial_scale转换为spatial_scale_h和spatial_scale_w",
+            "limits": "-"
+        },
+        "spatial_scale_h": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "rois映射到原始Feature Map的高缩放比例系数，默认值为0.0625",
+            "limits": "-"
+        },
+        "spatial_scale_w": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "rois映射到原始Feature Map的宽缩放比例系数,默认值为0.0625",
+            "limits": "-"
+        }
+    },
+    "AbsVal": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32,int32",
+            "required": "-",
+            "doc": "功能：求绝对值\n计算公式：y=|x|",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32,int32",
+            "required": "-",
+            "doc": "功能：求绝对值\n计算公式：y=|x|",
+            "limits": "float16"
+        }
+    },
+    "Bias": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float32, float16",
+            "required": true,
+            "doc": "输入Tensor",
+            "limits": "float16"
+        },
+        "bias": {
+            "classify": "INPUT",
+            "type_range": "float32, float16",
+            "required": true,
+            "doc": "bias",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float32, float16",
+            "required": true,
+            "doc": "输出Tensor",
+            "limits": "-"
+        },
+        "axis": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "默认值为1，不同的值对应的维度不同例如，bottom[0]是4维的，Shape为100x3x40x60，输出 top[0]有同样的Shape，而输入bottom[1] 根据axis的值确定，可以有如下的Shape:\n(axis == 0 == -4) 100; 100x3; 100x3x40; 100x3x40x60\n(axis == 1 == -3)          3;     \n3x40;     3x40x60\n(axis == 2 == -2)                   \n40;       40x60\n(axis == 3 == -1)                                \n60\n并且bottom[1] 的Shape为空表示输入的是标量bias，与axis无关.",
+            "limits": "[-rank(x), rank(x))，遵循caffe 规则"
+        },
+        "num_axes": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "指定训练的bias参数维度大小，-1表示axis 开始全部，如果是0表示标量。如果是在线数据bottom[1]输入，则忽略此参数，默认值为1",
+            "limits": "[-1, rank(x))，设axis_=axis>0:axis,axis+rank(x),则要求 num_axes+axis_<=rank(x)"
+        }
+    },
+    "BNLL": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "激活函数\n计算公式：if x >0: y = x + log(1 + exp(-x))\nelse: y = log(1 + exp(x))",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "激活函数\n计算公式：if x >0: y = x + log(1 + exp(-x))\nelse: y = log(1 + exp(x))",
+            "limits": "float16"
+        }
+    },
+    "Crop": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32,int8,uint8,int16,",
+            "required": true,
+            "doc": "对输入tensor x进行裁剪，裁剪成size的shape大小。\n计算公式：\n1. x—要进行裁剪的bottom，A的size为（20，50，512，512）\n2. size—裁剪的参考输入，size为（20，10，256，256）\n3. y—输出top，它是在x的基础上按照size的Shape裁剪而来，所以Shape和size是一样的。\nCrop里有两个重要的参数：axis（决定从哪个轴开始裁剪）和offsets（给出三个维度，决定裁剪位置的偏移），裁剪的长度和x2中对应的轴的长度是对应的。\n例如：\n1. 给出axis=1，offset=（25，128，128）\n2. 裁剪操作：C = A[:,25:25+size.shape[1],128:128+size.shape[2],128:128+size.shape[3]]。",
+            "limits": "-"
+        },
+        "size": {
+            "classify": "INPUT",
+            "type_range": "float16,float32,int8,uint8,int16,\nuint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "对输入tensor x进行裁剪，裁剪成size的shape大小。\n计算公式：\n1. x—要进行裁剪的bottom，A的size为（20，50，512，512）\n2. size—裁剪的参考输入，size为（20，10，256，256）\n3. y—输出top，它是在x的基础上按照size的Shape裁剪而来，所以Shape和size是一样的。\nCrop里有两个重要的参数：axis（决定从哪个轴开始裁剪）和offsets（给出三个维度，决定裁剪位置的偏移），裁剪的长度和x2中对应的轴的长度是对应的。\n例如：\n1. 给出axis=1，offset=（25，128，128）\n2. 裁剪操作：C = A[:,25:25+size.shape[1],128:128+size.shape[2],128:128+size.shape[3]]。",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32,int8,uint8,int16,\nuint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "对输入tensor x进行裁剪，裁剪成size的shape大小。\n计算公式：\n1. x—要进行裁剪的bottom，A的size为（20，50，512，512）\n2. size—裁剪的参考输入，size为（20，10，256，256）\n3. y—输出top，它是在x的基础上按照size的Shape裁剪而来，所以Shape和size是一样的。\nCrop里有两个重要的参数：axis（决定从哪个轴开始裁剪）和offsets（给出三个维度，决定裁剪位置的偏移），裁剪的长度和x2中对应的轴的长度是对应的。\n例如：\n1. 给出axis=1，offset=（25，128，128）\n2. 裁剪操作：C = A[:,25:25+size.shape[1],128:128+size.shape[2],128:128+size.shape[3]]。",
+            "limits": "-"
+        },
+        "axis": {
+            "classify": "ATTR",
+            "type_range": "int,默认值为2",
+            "required": false,
+            "doc": "对输入tensor x进行裁剪，裁剪成size的shape大小。\n计算公式：\n1. x—要进行裁剪的bottom，A的size为（20，50，512，512）\n2. size—裁剪的参考输入，size为（20，10，256，256）\n3. y—输出top，它是在x的基础上按照size的Shape裁剪而来，所以Shape和size是一样的。\nCrop里有两个重要的参数：axis（决定从哪个轴开始裁剪）和offsets（给出三个维度，决定裁剪位置的偏移），裁剪的长度和x2中对应的轴的长度是对应的。\n例如：\n1. 给出axis=1，offset=（25，128，128）\n2. 裁剪操作：C = A[:,25:25+size.shape[1],128:128+size.shape[2],128:128+size.shape[3]]。",
+            "limits": "-"
+        },
+        "offset": {
+            "classify": "ATTR",
+            "type_range": "ListInt",
+            "required": true,
+            "doc": "对输入tensor x进行裁剪，裁剪成size的shape大小。\n计算公式：\n1. x—要进行裁剪的bottom，A的size为（20，50，512，512）\n2. size—裁剪的参考输入，size为（20，10，256，256）\n3. y—输出top，它是在x的基础上按照size的Shape裁剪而来，所以Shape和size是一样的。\nCrop里有两个重要的参数：axis（决定从哪个轴开始裁剪）和offsets（给出三个维度，决定裁剪位置的偏移），裁剪的长度和x2中对应的轴的长度是对应的。\n例如：\n1. 给出axis=1，offset=（25，128，128）\n2. 裁剪操作：C = A[:,25:25+size.shape[1],128:128+size.shape[2],128:128+size.shape[3]]。",
+            "limits": "-"
+        }
+    },
+    "Power": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16， float32",
+            "required": true,
+            "doc": "幂函数，计算公式： y = (shift + scale * x) ^ power",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16， float32",
+            "required": true,
+            "doc": "幂函数，计算公式： y = (shift + scale * x) ^ power",
+            "limits": "float16"
+        },
+        "power": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认值1.0",
+            "limits": "power是有小数位的，要求底数大于0，其它按caffe定义"
+        },
+        "scale": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认值1.0",
+            "limits": "-"
+        },
+        "shift": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认值0.0",
+            "limits": "-"
+        }
+    },
+    "TanH": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16， float32",
+            "required": true,
+            "doc": "y=tanh(x)",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16， float32",
+            "required": true,
+            "doc": "y=tanh(x)",
+            "limits": "float16"
+        }
+    },
+    "Reverse": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32,int8,uint8,int16,uint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "输入Tensor",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32,int8,uint8,int16,uint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "输出tensor，与输入Tensor的数据类型和Shape相同",
+            "limits": "-"
+        },
+        "axis": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": true,
+            "doc": "是一个向量，表示反向的轴，取值范围在 [-rank(x), rank(x))",
+            "limits": "[-rank(x), rank(x))"
+        }
+    },
+    "Normalize": {
+        "x1": {
+            "classify": "INPUT",
+            "type_range": "float32, float16",
+            "required": true,
+            "doc": "需要normalized的输入Tensor",
+            "limits": "float16"
+        },
+        "x2": {
+            "classify": "INPUT",
+            "type_range": "float32, float16",
+            "required": true,
+            "doc": "normalized的scale输入Tensor，是一个N维的向量。如果channel_shared==True，则N=1；否则channel_shared==False，N=channel",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float32, float16",
+            "required": true,
+            "doc": "输出Tensor",
+            "limits": "float16"
+        },
+        "across_spatial": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "True表示在CHW 维度做normalize，False表示只在C维度上做normalize，默认为True",
+            "limits": "True或者False"
+        },
+        "channel_shared": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "用于控制x2的参数，默认为True",
+            "limits": "True或者False"
+        },
+        "eps": {
+            "classify": "ATTR",
+            "type_range": "-",
+            "required": false,
+            "doc": "为了防止除0，默认值1e-10",
+            "limits": "-"
+        }
+    },
+    "PSROIPooling": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "feature Map,[batch,C,H,W], 其中的C=rois_num*group_size^2",
+            "limits": "float16"
+        },
+        "rois": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "Shape是 [batch,5,rois_num]，其中的5表示(batchID,x1,y1,x2,y2)",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "类似ROIPooling，不同位置的输出来自不同channel 的输入[batch*rois_num,output_dim,group_size,group_size]",
+            "limits": "float16"
+        },
+        "spatial_scale": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": true,
+            "doc": "进行ROIPooling特征输入的尺寸相比原始输入的比例",
+            "limits": "大于0"
+        },
+        "output_dim": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": true,
+            "doc": "输出channels，必须大于0",
+            "limits": "支持，输出ROI的channel维度大小"
+        },
+        "group_size": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": true,
+            "doc": "输出Feature的高和宽",
+            "limits": "支持，输出ROI 的H 和W大小，H=W；要求原始的input_channel= =out_channel*group_size^2"
+        }
+    },
+    "Permute": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,fp32",
+            "required": true,
+            "doc": "对输入数据进行转置操作",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,fp32",
+            "required": true,
+            "doc": "对输入数据进行转置操作",
+            "limits": "float16"
+        },
+        "order": {
+            "classify": "ATTR",
+            "type_range": "listInt",
+            "required": true,
+            "doc": "转置的顺序",
+            "limits": "-"
+        }
+    },
+    "PRelu": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "int8,uint8,float16,float32",
+            "required": true,
+            "doc": "激活函数，y=weight min(x,0)+max(x,0)",
+            "limits": "float16"
+        },
+        "weight": {
+            "classify": "INPUT",
+            "type_range": "int8,uint8,float16,float32",
+            "required": true,
+            "doc": "只根据weight的维度区分是否为channe_shared场景 ，如果 weight只有一个数，则为channe_shared==True，如果 weight是 channel维度 ，则channel_shared==False",
+            "limits": "支持Float16，是channel维度的向量或者标量"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "int8,uint8,float16,float32",
+            "required": true,
+            "doc": "-",
+            "limits": "float16"
+        }
+    },
+    "PassThrough": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32,int8,uint8,int16,\nuint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "将通道数据转移到平面上，或反过来操作,如下为reverse==TRue，输入Shape为 [batch,C,H*stride,W*stride]，输出Shape为 [batch,stride*stride*C,H,W]",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32,int8,uint8,int16,\nuint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "将通道数据转移到平面上，或反过来操作,如下为reverse==TRue，输入Shape为 [batch,C,H*stride,W*stride]，输出Shape为 [batch,stride*stride*C,H,W]",
+            "limits": "-"
+        },
+        "stride": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "平面或通道数扩大的倍数，默认2",
+            "limits": "float16"
+        },
+        "reverse": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "为true时相当于Depthtospace，为false时相当于spacetoDepth",
+            "limits": "float16"
+        }
+    },
+    "scale": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float32, float16",
+            "required": true,
+            "doc": "输入Tensor",
+            "limits": "-"
+        },
+        "scale": {
+            "classify": "INPUT",
+            "type_range": "float32, float16",
+            "required": true,
+            "doc": "scale的tensor",
+            "limits": "-"
+        },
+        "bias": {
+            "classify": "INPUT",
+            "type_range": "float32, float16",
+            "required": false,
+            "doc": "bias tensor",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float32, float16",
+            "required": true,
+            "doc": "输出tensor",
+            "limits": "-"
+        },
+        "axis": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "默认为1，输入的bottom[0]做scale的起始维度，axis 不同则bottom[1]\n的shape 不同，例如，如果 bottom[0] 是4维，shape为00x3x40x60，输出 top[0] shape相同，且给定axis，bottom[1] 可以有如下的Shape：\n(axis == 0 == -4) 100; 100x3; 100x3x40; 100x3x40x60\n(axis == 1 == -3)          3;     3x40;     3x40x60\n(axis == 2 == -2)                   40;       40x60\n(axis == 3 == -1)                                60\n并且，bottom[1] 的shape可以为空，表示scale是一个标量（这时axis就没有意义）.",
+            "limits": "[-rank(x), rank(x))"
+        },
+        "num_axes": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "默认是1，当只有一个bottom 的时候有效，表示做scale 的维度，-1\n表示axis 开始全部，0 表示是参数只有一个scalar",
+            "limits": "[-1, rank(x))，设axis_=axis>0:axis,axis+rank(x),则要求 num_axes+axis_<=rank(x)"
+        }
+    },
+    "Convolution（DepthwiseConv，ConvolutionDepthwise）": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "对输入x做卷积",
+            "limits": "-"
+        },
+        "filter": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "卷积核DepthwiseConv和ConvolutionDepthwise都通过转换为Convolution算子来使用，例如ConvolutionDepthwise算子：\nlayer { \n   name: \"resx1_conv2\" \n   type: \"ConvolutionDepthwise\" \n   bottom: \"resx1_conv1\" \n   top: \"resx1_conv2\" \n   convolution_param { \n     num_output: 54 \n     kernel_size: 3 \n     stride: 2 \n     pad: 1 \n     bias_term: false \n     weight_filler { \n       type: \"msra\" \n     } \n   } \n }\n需要修改为：\nlayer { \n   name: \"resx1_conv2\" \n   type: \"Convolution\" \n   bottom: \"resx1_conv1\" \n   top: \"resx1_conv2\" \n   convolution_param { \n     num_output: 54 \n     group: 54 \n     kernel_size: 3 \n     stride: 2 \n     pad: 1 \n     bias_term: false \n     weight_filler { \n       type: \"msra\" \n     } \n   } \n }\n如果DepthwiseConv和ConvolutionDepthwise中已携带group属性，则只修改type为Convolution即可；如果没有携带group属性，则需添加group属性：group==num_output（group、out_channel和input_channel必须相同）\n\n说明：\n修改后的模型文件（.prototxt）和权重文件（.caffemodel）的op name、op type必须保持名称一致（包括大小写）。",
+            "limits": "如下的场景 限制： \n1）如果 out_w==out _h==1： feature_w= =feature_h= =filter_w==f ilter_h,且取 值范围在 1~11 \n2）不支持 输出的 W==1，输 出的H不等 于1的场景 \n3）如果 group==Ch annel，则 要求 Filter_h*filt er_w*32+fe ature_w*(3 1*stride_h +filter_w)< =32768,且 满足 Filter_w,filt er_h配置范 围在1~255. \n4）其它场景： Filter_W和 Filter_h配置 范围在 1~255"
+        },
+        "bias": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": false,
+            "doc": "bias，可以为None（表示不需要bias）",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "-",
+            "limits": "-"
+        },
+        "pad": {
+            "classify": "ATTR",
+            "type_range": "ListInt",
+            "required": false,
+            "doc": "高和宽轴开始和结束的Padding, pad和pad_h/pad_w不能同时提供，默认值为0；pad的List长度最大为2",
+            "limits": "pad<filter.size"
+        },
+        "pad_h": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "高和宽轴开始和结束的Padding, pad和pad_h/pad_w不能同时提供，默认值为0；pad的List长度最大为2",
+            "limits": "pad<filter.size"
+        },
+        "pad_w": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "高和宽轴开始和结束的Padding, pad和pad_h/pad_w不能同时提供，默认值为0；pad的List长度最大为2",
+            "limits": "pad<filter.size"
+        },
+        "stride": {
+            "classify": "ATTR",
+            "type_range": "ListInt",
+            "required": false,
+            "doc": "高和宽轴的stride.stride和stride_h/stride_w不能同时提供，默认值为1；stride的List长度最大为2",
+            "limits": "1<=stride<=63"
+        },
+        "stride_h": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "高和宽轴的stride.stride和stride_h/stride_w不能同时提供，默认值为1；stride的List长度最大为2",
+            "limits": "1<=stride<=63"
+        },
+        "stride_w": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "高和宽轴的stride.stride和stride_h/stride_w不能同时提供，默认值为1；stride的List长度最大为2",
+            "limits": "1<=stride<=63"
+        },
+        "dilation": {
+            "classify": "ATTR",
+            "type_range": "ListInt",
+            "required": false,
+            "doc": "Filter的高和宽轴的放大系数，List长度最大为2，默认值为1",
+            "limits": "支持 1~255，配置后 (kernel1)*dilation +1<256;\n"
+        },
+        "group": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "-",
+            "limits": "group能被channel整除"
+        }
+    },
+    "Deconvolution": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "输入Tensor",
+            "limits": "float16"
+        },
+        "filter": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "卷积核，shape为 [H,W,filter_channel,filter_number]，filter_channel必须与 x channel相等",
+            "limits": "如下的场景限制：\n1）如果out_w==out_h==1：feature_w==feature_h==filter_w==filter_h,且取值范围在1~11\n2）不支持输出的W==1，输出的H不等于1的场景\n3）如果group==Channel，则要求 Filter_h*filter_w*32+feature_w*(31*stride_h+filter_w)<=32768,且满足Filter_w,filter_h配置范围在1~255.\n3）其它场景：Filter_W和Filter_h配置范围在1~255"
+        },
+        "bias": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": false,
+            "doc": "-",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "-",
+            "limits": "-"
+        },
+        "pad": {
+            "classify": "ATTR",
+            "type_range": "ListInt",
+            "required": false,
+            "doc": "高和宽轴开始和结束的Padding，pad和pad_h/pad_w不能同时提供，默认值为0\npad List的长度最大为2\n",
+            "limits": "pad<filter.size"
+        },
+        "pad_h": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "高和宽轴开始和结束的Padding，pad和pad_h/pad_w不能同时提供，默认值为0\npad List的长度最大为2\n",
+            "limits": "pad<filter.size"
+        },
+        "pad_w": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "高和宽轴开始和结束的Padding，pad和pad_h/pad_w不能同时提供，默认值为0\npad List的长度最大为2\n",
+            "limits": "pad<filter.size"
+        },
+        "stride": {
+            "classify": "ATTR",
+            "type_range": "ListInt",
+            "required": false,
+            "doc": "高和宽轴的stride，stride和stride_h/stride_w不能同时提供，默认值为1\nstride List的长度最大为2",
+            "limits": "0<=stride<=63"
+        },
+        "stride_h": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "高和宽轴的stride，stride和stride_h/stride_w不能同时提供，默认值为1\nstride List的长度最大为2",
+            "limits": "0<=stride<=63"
+        },
+        "stride_w": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "高和宽轴的stride，stride和stride_h/stride_w不能同时提供，默认值为1\nstride List的长度最大为2",
+            "limits": "0<=stride<=63"
+        },
+        "dilation": {
+            "classify": "ATTR",
+            "type_range": "ListInt",
+            "required": false,
+            "doc": "Filter的高和宽轴的放大系数，List长度最大为2，默认值为1",
+            "limits": "支持 1~255，配置后 (kernel1)*dilation +1<256;"
+        },
+        "group": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "-",
+            "limits": "group能被channel整除"
+        }
+    },
+    "ELU": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "激活函数，融合了sigmoid和ReLU。\n计算公式：if x >0: y = x\nelse: y = alpha*(exp(x)-1)",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "激活函数，融合了sigmoid和ReLU。\n计算公式：if x >0: y = x\nelse: y = alpha*(exp(x)-1)",
+            "limits": "float16"
+        },
+        "alpha": {
+            "classify": "ATTR",
+            "type_range": "float，默认值为1",
+            "required": false,
+            "doc": "激活函数，融合了sigmoid和ReLU。\n计算公式：if x >0: y = x\nelse: y = alpha*(exp(x)-1)",
+            "limits": "float16"
+        }
+    },
+    "Slice": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32,int8,uint8,int16,\nuint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "沿某个维度切割输入的blob，输出多个切割的blob",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32,int8,uint8,int16,\nuint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "沿某个维度切割输入的blob，输出多个切割的blob",
+            "limits": "-"
+        },
+        "slice_dim": {
+            "classify": "ATTR",
+            "type_range": "uint",
+            "required": "-",
+            "doc": "默认为1，跟axis 含义相同",
+            "limits": "支持配置 [1, rank(x))，遵循caffe 规则；"
+        },
+        "slice_point": {
+            "classify": "ATTR",
+            "type_range": "uint",
+            "required": "-",
+            "doc": "表示输出的各个blob 的切割点，不定义的则均分",
+            "limits": "支持，切割点数小于32；"
+        },
+        "axis": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": "-",
+            "doc": "默认为1，表示切块的维度",
+            "limits": "[-rank(x), rank(x))，遵循caffe 规则；"
+        }
+    },
+    "Exp": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "指数运算\n计算公式：\nif base>0: y = base ^ (shift + scale * x)\nif base == -1: y = exp(shift + scale * x)",
+            "limits": "Float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "指数运算\n计算公式：\nif base>0: y = base ^ (shift + scale * x)\nif base == -1: y = exp(shift + scale * x)",
+            "limits": "Float16"
+        },
+        "base": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认为-1.0，底数",
+            "limits": "base=-1或者大于0"
+        },
+        "scale": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认为1.0",
+            "limits": "-"
+        },
+        "shift": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认为0",
+            "limits": "-"
+        }
+    },
+    "Flatten": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32,int8,uint8,int16,\nuint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "输入Tensor",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32,int8,uint8,int16,\nuint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "输出tensor",
+            "limits": "-"
+        },
+        "axis": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "需要flatten的开始轴，可以为负数，如果为-1表示最后一个轴，默认值为1",
+            "limits": "[-rank(x), rank(x))"
+        },
+        "end_axis": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "需要flatten的结束轴，可以为负数，如果为-1表示最后一个轴，默认值1",
+            "limits": "[0, rank(x))"
+        }
+    },
+    "INPUT": {
+        "images": {
+            "classify": "INPUT",
+            "type_range": "uint8",
+            "required": true,
+            "doc": "输入的tensor",
+            "limits": "-"
+        },
+        "params": {
+            "classify": "INPUT",
+            "type_range": "uint8",
+            "required": false,
+            "doc": "动态aipp结构体数据流，kAippDynamicPara + (batchNum - 1) * kAippDynamicBatchPara\n/** \n* @ingroup dnn \n* @brief struct define of dynamic aipp batch parameter. \n*/ \ntypedef struct tagAippDynamicBatchPara \n{ \nint8_t cropSwitch;              //crop switch \nint8_t scfSwitch;               //resize switch \nint8_t paddingSwitch;           //0: unable padding, 1: padding config value,sfr_filling_hblank_ch0 ~  sfr_filling_hblank_ch2 \n//2: padding source picture data, single row/collumn copy \n//3: padding source picture data, block copy \n//4: padding source picture data, mirror copy \nint8_t rotateSwitch;            //rotate switch，0: non-ratate，1: ratate 90° clockwise，2: ratate 180° clockwise，3: ratate 270° clockwise \nint8_t reserve[4]; \nint32_t cropStartPosW;          //the start horizontal position of cropping \nint32_t cropStartPosH;          //the start vertical position of cropping \nint32_t cropSizeW;              //crop width \nint32_t cropSizeH;              //crop height \nint32_t scfInputSizeW;          //input width of scf \nint32_t scfInputSizeH;          //input height of scf \nint32_t scfOutputSizeW;         //output width of scf \nint32_t scfOutputSizeH;         //output height of scf \nint32_t paddingSizeTop;         //top padding size \nint32_t paddingSizeBottom;      //bottom padding size \nint32_t paddingSizeLeft;        //left padding size \nint32_t paddingSizeRight;       //right padding size \nint16_t dtcPixelMeanChn0;       //mean value of channel 0 \nint16_t dtcPixelMeanChn1;       //mean value of channel 1 \nint16_t dtcPixelMeanChn2;       //mean value of channel 2 \nint16_t dtcPixelMeanChn3;       //mean value of channel 3 \nuint16_t dtcPixelMinChn0;       //min value of channel 0 \nuint16_t dtcPixelMinChn1;       //min value of channel 1 \nuint16_t dtcPixelMinChn2;       //min value of channel 2 \nuint16_t dtcPixelMinChn3;       //min value of channel 3 \nuint16_t dtcPixelVarReciChn0;   //sfr_dtc_pixel_variance_reci_ch0 \nuint16_t dtcPixelVarReciChn1;   //sfr_dtc_pixel_variance_reci_ch1 \nuint16_t dtcPixelVarReciChn2;   //sfr_dtc_pixel_variance_reci_ch2 \nuint16_t dtcPixelVarReciChn3;   //sfr_dtc_pixel_variance_reci_ch3 \nint8_t reserve1[16];            //32B assign, for ub copy \n}kAippDynamicBatchPara; \n \n/** \n* @ingroup dnn \n* @brief struct define of dynamic aipp parameter. lite:64+96*batchNum byte ; tiny:64+64*batchNum byte \n*/ \ntypedef struct tagAippDynamicPara \n{ \nuint8_t inputFormat;            //input format：YUV420SP_U8/XRGB8888_U8/RGB888_U8 \nint8_t cscSwitch;               //csc switch \nint8_t rbuvSwapSwitch;          //rb/ub swap switch \nint8_t axSwapSwitch;            //RGBA->ARGB, YUVA->AYUV swap switch \nint8_t batchNum;                //batch parameter number \nint8_t reserve1[3]; \nint32_t srcImageSizeW;          //source image width \nint32_t srcImageSizeH;          //source image height \nint16_t cscMatrixR0C0;          //csc_matrix_r0_c0 \nint16_t cscMatrixR0C1;          //csc_matrix_r0_c1 \nint16_t cscMatrixR0C2;          //csc_matrix_r0_c2 \nint16_t cscMatrixR1C0;          //csc_matrix_r1_c0 \nint16_t cscMatrixR1C1;          //csc_matrix_r1_c1 \nint16_t cscMatrixR1C2;          //csc_matrix_r1_c2 \nint16_t cscMatrixR2C0;          //csc_matrix_r2_c0 \nint16_t cscMatrixR2C1;          //csc_matrix_r2_c1 \nint16_t cscMatrixR2C2;          //csc_matrix_r2_c2 \nint16_t reserve2[3]; \nuint8_t cscOutputBiasR0;        //output Bias for RGB to YUV, element of row 0, unsigned number \nuint8_t cscOutputBiasR1;        //output Bias for RGB to YUV, element of row 1, unsigned number \nuint8_t cscOutputBiasR2;        //output Bias for RGB to YUV, element of row 2, unsigned number \nuint8_t cscInputBiasR0;         //input Bias for YUV to RGB, element of row 0, unsigned number \nuint8_t cscInputBiasR1;         //input Bias for YUV to RGB, element of row 1, unsigned number \nuint8_t cscInputBiasR2;         //input Bias for YUV to RGB, element of row 2, unsigned number \nuint8_t reserve3[2]; \nint8_t reserve4[16];            //32B assign, for ub copy \n \nkAippDynamicBatchPara aippBatchPara;  //allow transfer several batch para. \n} kAippDynamicPara;",
+            "limits": "-"
+        },
+        "features": {
+            "classify": "OUTPUT",
+            "type_range": "uint8,float16",
+            "required": true,
+            "doc": "输出的tensor",
+            "limits": "-"
+        },
+        "aipp_config_path": {
+            "classify": "ATTR",
+            "type_range": "-",
+            "required": true,
+            "doc": "aipp配置文件路径，默认为 './aipp.cfg'",
+            "limits": "-"
+        }
+    },
+    "ROIAlign": {
+        "features": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "输入Tensor",
+            "limits": "-"
+        },
+        "rois": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "输入数据为[N,5]或者[N,8]，其中的5表示batchID,x1,y1,x2,y2,8中前5个数据有效",
+            "limits": "-"
+        },
+        "rois_n": {
+            "classify": "INPUT",
+            "type_range": "int32",
+            "required": false,
+            "doc": "Tensor的Shape为[batch,8]，表示每个batch实际的rois数量，可选",
+            "limits": "-"
+        },
+        "output": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "-",
+            "limits": "-"
+        },
+        "spatial_scale": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": true,
+            "doc": "rois相对feature的缩放比例",
+            "limits": "-"
+        },
+        "pooled_h": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": true,
+            "doc": "输出y的height",
+            "limits": "-"
+        },
+        "pooled_w": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": true,
+            "doc": "输出y的width",
+            "limits": "-"
+        },
+        "sampling_ratio": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "用于确定每个bin中采样几个点求均值",
+            "limits": "2"
+        }
+    },
+    "SSDDetectionOutput": {
+        "bbox_delta": {
+            "classify": "INPUT",
+            "type_range": "Float16,float32",
+            "required": true,
+            "doc": "框位置偏移数据[batch,N*num_loc_classes*4]\n其中num_loc_classes_= share_location==True ? 1 : num_classes，4表示（xmin,ymin,xmax,yman）",
+            "limits": "Float16"
+        },
+        "score": {
+            "classify": "INPUT",
+            "type_range": "Float16,float32",
+            "required": true,
+            "doc": "置信度数据[batch,N*Num_classes]",
+            "limits": "Float16"
+        },
+        "anchors": {
+            "classify": "INPUT",
+            "type_range": "Float16,float32",
+            "required": true,
+            "doc": "预选框数据[batch,2,N*4]或者[1,2,N*4]，其中的2分别表示box和variance，如果variance_encoded_in_target==True,可以不需要variance（即里面的2可以更改为1） ,4表示（xmin,ymin,xmax,yman）",
+            "limits": "Float16"
+        },
+        "out_boxnum": {
+            "classify": "OUTPUT",
+            "type_range": "int32",
+            "required": true,
+            "doc": "输出框的个数[batch,8]，每个batch的第一个值是实际框的个数",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "Float16,float32",
+            "required": true,
+            "doc": "输出框数据，[batch,len,8]，其中8表示(batchID,label(classID),score(类别概率)，xmin,ymin,xmax,yman,null)；len是keep_top_k 128对齐后的取值（如batch为2，keep_top_k 为200，则最后输出shape为(2,256,8)），前256*8个数据为第一个batch的结果。",
+            "limits": "Float16"
+        },
+        "num_classes": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": true,
+            "doc": "要预测的类数，当background_label_id==-1时，必须大于等于1，如果background_label_id>=0时，必须大于等于2；最大支持1024，默认值为2",
+            "limits": "最大支持1024"
+        },
+        "share_location": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "表示不同类间共享框位置，默认值True",
+            "limits": "-"
+        },
+        "background_label_id": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "Background label id，必须为大于等于-1，默认为0",
+            "limits": "大于等于-1"
+        },
+        "iou_threshold": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "交并比（Intersection over Union）阈值， (0,1]，默认值为0.3",
+            "limits": "(0,1]"
+        },
+        "top_k": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "在nms步骤前每个图像要保留的总bbox数  // (0,1024]，默认为200",
+            "limits": "(0,1024]"
+        },
+        "eta": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "nms 参数，默认值为1（只支持1）",
+            "limits": "只支持1"
+        },
+        "variance_encoded_in_target": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "方差是否被编码，默认为False",
+            "limits": "-"
+        },
+        "code_type": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "bbox的编解码方式，默认值为1，corner=1  center_size =2  corner_size=3",
+            "limits": "支持1,2,3"
+        },
+        "keep_top_k": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "在nms步骤后每个图像要保留的总bbox数，（0,1024]，默认为200，如果为-1表示NMS后的框都保留",
+            "limits": "（0,1024]"
+        },
+        "confidence_threshold": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "仅考虑置信度大于阈值的检测  [0,1]",
+            "limits": "[0,1]"
+        }
+    },
+    "PriorBox": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16, float32",
+            "required": true,
+            "doc": "输入Tensor，只使用到shape中的 高H和宽W",
+            "limits": "Float16"
+        },
+        "img": {
+            "classify": "INPUT",
+            "type_range": "float16, float32",
+            "required": false,
+            "doc": "图片信息，如果有输入，则使用到高和宽。就不需要指定attr中的  img_size nor img_h/img_w",
+            "limits": "Float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16, float32",
+            "required": true,
+            "doc": "输出Tensor[1,2,num_output*4],其中num_output=H *W*num_priors,  num_priors表示 每个  栅格中rois的数量，其值为min_size的数量+aspect_ratio的数量*min_size的数量+max_size的数量",
+            "limits": "Float16"
+        },
+        "min_size": {
+            "classify": "ATTR",
+            "type_range": "ListFloat",
+            "required": true,
+            "doc": "box的最小尺寸 (像素点)",
+            "limits": "-"
+        },
+        "max_size": {
+            "classify": "ATTR",
+            "type_range": "ListFloat",
+            "required": true,
+            "doc": "box的最大尺寸 (像素点)",
+            "limits": "-"
+        },
+        "aspect_ratio": {
+            "classify": "ATTR",
+            "type_range": "ListFloat",
+            "required": true,
+            "doc": "aspect ratios，生成box的宽高的比例，将去掉重复的值",
+            "limits": "listFloat，大于0"
+        },
+        "flip": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "每个aspect_ratio是否flip，默认值为True",
+            "limits": "-"
+        },
+        "clip": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "生成的box是否做clip处理，默认为False",
+            "limits": "-"
+        },
+        "variance": {
+            "classify": "ATTR",
+            "type_range": "ListFloat",
+            "required": false,
+            "doc": "生成box的Variance",
+            "limits": "-"
+        },
+        "step_h": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "高的步长",
+            "limits": "-"
+        },
+        "step_w": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "宽的步长",
+            "limits": "-"
+        },
+        "offset": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "每个小栅格上相对左上角的Offset",
+            "limits": "-"
+        },
+        "img_h": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "图像的高",
+            "limits": "-"
+        },
+        "img_w": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "图像的宽",
+            "limits": "-"
+        }
+    },
+    "FSRDetectionOutput": {
+        "rois": {
+            "classify": "INPUT",
+            "type_range": "Float16,float32",
+            "required": true,
+            "doc": "Proposal的输出值，[batch, 5,max_rois_num]，其中的5表示(batchID ,x1,y1,x2,y2),max_rois_num是每个batch最大的rois的个数，必须是16的倍数，实际每个batch按actual_rois_num处理数量。",
+            "limits": "Float16"
+        },
+        "bbox_delta": {
+            "classify": "INPUT",
+            "type_range": "Float16,float32",
+            "required": true,
+            "doc": "bbox_delta的Tensor，[total_rois,num_classes*4]，这里的4表示（ delta_x,delta_y,delta_w,delta_h），total_rois指实际rois的总数",
+            "limits": "Float16"
+        },
+        "score": {
+            "classify": "INPUT",
+            "type_range": "Float16,float32",
+            "required": true,
+            "doc": "[total_rois,num_classes]，每个类别的概率（其中classes为0表示背景概率），total_rois指实际rois的总数",
+            "limits": "Float16"
+        },
+        "im_info": {
+            "classify": "INPUT",
+            "type_range": "Float16,float32",
+            "required": false,
+            "doc": "输入图像的高和宽",
+            "limits": "-"
+        },
+        "actual_rois_num": {
+            "classify": "INPUT",
+            "type_range": "int",
+            "required": false,
+            "doc": "[batch_rois,8]，其中第一个有效，表示每个batch实际输出的rois数量。",
+            "limits": "-"
+        },
+        "actual_bbox_num": {
+            "classify": "OUTPUT",
+            "type_range": "int32",
+            "required": true,
+            "doc": "[bacth,num_classes]，数据类型是int32，实际输出的bbox数量",
+            "limits": "-"
+        },
+        "box": {
+            "classify": "OUTPUT",
+            "type_range": "Float16,float32",
+            "required": true,
+            "doc": "实际输出的Proposal，[batch, numBoxes,8]，其中的8表示 [x1, y1, x2, y2, score, label, batchID, NULL]，numBoxes的最大 值是1024，即取min(输入框最大数量，1024）",
+            "limits": "Float16"
+        },
+        "batch_rois": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "rois中含有的batch数，默认值为1(接口保留，实际从shape中取值）",
+            "limits": "-"
+        },
+        "num_classes": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": true,
+            "doc": "类的数量，包括背景",
+            "limits": "-"
+        },
+        "score_threshold": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": true,
+            "doc": "score的阈值",
+            "limits": "-"
+        },
+        "iou_threshold": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": true,
+            "doc": "交并比（Intersection over Union）阈值",
+            "limits": "-"
+        }
+    },
+    "Reshape": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "uint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "输入Tensor",
+            "limits": "-"
+        },
+        "shape": {
+            "classify": "INPUT",
+            "type_range": "int32,int64",
+            "required": false,
+            "doc": "指示输出的维度大小，0表示跟bottom 一致，-1 表示该维度由输入的blob 及输出的其他维度决定",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "uint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "维度变换后的输出Tensor",
+            "limits": "-"
+        },
+        "axis": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": true,
+            "doc": "默认为0，表示shape 中第一数值与输出的第几个起始维度对应",
+            "limits": "[-rank(x), rank(x))"
+        },
+        "num_axes": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "计算输出Shape的维度数： \n•当num_axes ==-1，输出Tensor 的shape.size() = shape.size() + axis \n•当num_axes<>-1时，输出 Tensor的shape.size() = shape.size() + tensor.size() num_axes",
+            "limits": "支持 [-1,rank(x) 范围内可 配，默认 值-1 表示对 axis 起始的 所有 轴进行变换"
+        }
+    },
+    "Sigmoid": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16， float32",
+            "required": true,
+            "doc": "simoid激活函数 y = (1 + exp(-x))^{-1}",
+            "limits": "Float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16， float32",
+            "required": true,
+            "doc": "simoid激活函数 y = (1 + exp(-x))^{-1}",
+            "limits": "Float16"
+        }
+    },
+    "Concat": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,fp32,int8,int16,int32,\nint64,uint8,uint16,uint32,uint64",
+            "required": true,
+            "doc": "将多个tensor按照指定轴合并为一个tensor。\n其中x为变长的tensor list。\n",
+            "limits": "bottom Num最大为16."
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,fp32,int8,int16,int32,\nint64,uint8,uint16,uint32,uint64",
+            "required": true,
+            "doc": "将多个tensor按照指定轴合并为一个tensor。\n其中x为变长的tensor list。\n",
+            "limits": "-"
+        },
+        "axis": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "默认为1，表示哪个维度concat，可以为负数",
+            "limits": "支持配置，需要在维度范围之内"
+        },
+        "concat_dim": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "默认为1，跟axis 含义相同",
+            "limits": "跟axis 含义相同，不支持负值"
+        }
+    },
+    "Upsample(darknet)": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "Float16,float32",
+            "required": true,
+            "doc": "y[N,C,i,j]=scale*x[N,C,i/stride_h,j/stride_w],其中0<=i<=stride_h*x.h-1,0<=j<=stride_w*x.w-1\n如果同时有stride、stride_h和stride_w，以stride的值为准",
+            "limits": "Float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "Float16,float32",
+            "required": true,
+            "doc": "y[N,C,i,j]=scale*x[N,C,i/stride_h,j/stride_w],其中0<=i<=stride_h*x.h-1,0<=j<=stride_w*x.w-1\n如果同时有stride、stride_h和stride_w，以stride的值为准",
+            "limits": "Float16"
+        },
+        "stride": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "如果同时有stride、stride_h和 stride_w，以stride的值为准",
+            "limits": "-"
+        },
+        "stride_h": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "默认值为2，h方向放大的比例",
+            "limits": "大于1"
+        },
+        "stride_w": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "默认值为2，w方向放大的比例",
+            "limits": "大于1"
+        },
+        "scale": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认值为1，输出值的比例系数",
+            "limits": "-"
+        }
+    },
+    "Yolo": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch, boxes *（coords+1+classes）,height,width]",
+            "limits": "Float16"
+        },
+        "coord_data": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch, boxes*coords, ceil(height*width*2+32, 32)/2]，表示预测的coords。",
+            "limits": "Float16"
+        },
+        "obj_data": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch, ceil(boxes*height*width *2+32, 32)/2]，这里的每个anchor的obj的数值只有1个。",
+            "limits": "Float16"
+        },
+        "classes_data": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[bacth, classes, ceil(boxes*height*width *2+32, 32)/2]，为便于内部计算已将每个anchor的score向16取整。",
+            "limits": "Float16"
+        },
+        "boxes": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "每个grid的anbox的数量，默认值3。",
+            "limits": "-"
+        },
+        "coords": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "coords的数量，固定为4，表示x、y、h、w",
+            "limits": 4
+        },
+        "classes": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "类别数，默认为80，不能超过1024。",
+            "limits": "最大1024"
+        },
+        "yolo_version": {
+            "classify": "ATTR",
+            "type_range": "string",
+            "required": false,
+            "doc": "“V2”或者“V3”，表示yolo V2和V3的版本；分别对应于detection_layer和Yolo_layer，默认值\"V3\"。",
+            "limits": "V2或者V3"
+        },
+        "softmax": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "在YOLO V2和V3中，表示是否做softmax操作，默认值False",
+            "limits": "True或者False"
+        },
+        "softmaxtree": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "softmaxtree 固定为False，接口保留（darknet中有定义）",
+            "limits": false
+        },
+        "background": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "在YOLO V2和V3中，与“softmax”参数配合，用于确定对b、classes等做的操作类型，默认值False。",
+            "limits": "True或者False"
+        }
+    },
+    "YoloV2DetectionOutput": {
+        "coord_data": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch,coords *boxes,height,width]，表示预测的coords",
+            "limits": "float16，height*width*Dtype_Size>=32 Byte"
+        },
+        "obj_prob": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch,boxes,height,width]，此处每个anchor的obj的数值只有1个",
+            "limits": "float16"
+        },
+        "classes_prob": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch,boxes*classes,height,width] , 为了方便AICORE计算已将每个anchor的score向16取整",
+            "limits": "float16，height*width*Dtype_Size>=32 Byte"
+        },
+        "img_info": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "原图信息，[batch,4]，4表示 netH、netW、scaleH、scaleW四个维度。其中netH,netW为网络模型输入的 HW，scaleH,scaleW为原始图片的HW。",
+            "limits": "float16"
+        },
+        "box_out": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch,6*post_nms_topn]，在其中的6表示x1, y1, x2, y2, score, label（类别），实际按box_out_num的数量输出",
+            "limits": "float16"
+        },
+        "box_out_num": {
+            "classify": "OUTPUT",
+            "type_range": "int32",
+            "required": true,
+            "doc": "[batch,8,1,1]，数据类型为int32,8个数中仅第一个数有效，每个batch中有效框的数量，每个batch中有效框的数量最大为1024",
+            "limits": "-"
+        },
+        "biases": {
+            "classify": "ATTR",
+            "type_range": "ListFloat",
+            "required": true,
+            "doc": "[boxes,2]，其中2分别表示x（w)和y(h)方向。",
+            "limits": "-"
+        },
+        "boxes": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "每个grid的anbox的数量，默认为5",
+            "limits": "-"
+        },
+        "coords": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "Coords的数量，固定为4，表示x,y,h,w",
+            "limits": "固定为4"
+        },
+        "classes": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "类别数，默认为20",
+            "limits": "最大1024"
+        },
+        "relative": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "在correct_region_boxes中表示是否为相对值，True",
+            "limits": "True或者False"
+        },
+        "obj_threshold": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "有物体概率的阈值，对应于clsProb中的阈值，默认值为0.5",
+            "limits": "[0,1]"
+        },
+        "pre_nms_topn": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "pre_nms_topn对应于multiClassNMS（对于每个类别，取前pre_nms_topn个数量进行处理，最大支持512，Mini，Cloud最大支持1024，默认值512.",
+            "limits": "最大1024"
+        },
+        "post_nms_topn": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "经过nms之后返回全部还是postTopK个框，最大为1024；默认值512",
+            "limits": "最大1024"
+        },
+        "score_threshold": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "每个类别的阈值，默认值为0.5",
+            "limits": "[0,1]"
+        },
+        "iou_threshold": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "交并比（Intersection over Union）阈值,默认值是0.45",
+            "limits": "[0,1]"
+        }
+    },
+    "YoloV3DetectionOutput": {
+        "coord_data_low": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch,coords *boxes,ceil(height_low*width_low,16)+16]，表示预测的coords。",
+            "limits": "float16，height_low*width_low*Dtype_Size>=32 Byte"
+        },
+        "coord_data_mid": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch,coords *boxes,ceil(height_mid*width_mid,16)+16]，表示预测的coords。",
+            "limits": "float16，height_mid*width_mid*Dtype_Size>=32 Byte"
+        },
+        "coord_data_high": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch,coords *boxes,ceil(height_high*width_high,16)+16]，表示预测的coords。",
+            "limits": "float16，height_high*width_high*Dtype_Size>=32 Byte"
+        },
+        "obj_prob_low": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch,ceil(boxes*height_low*width_low,16)+16]，这里的每个anchor的obj的数值只有1个。",
+            "limits": "float16"
+        },
+        "obj_prob_mid": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch,ceil(boxes*height_mid*width_mid,16)+16]，这里的每个anchor的obj的数值只有1个。",
+            "limits": "float16"
+        },
+        "obj_prob_high": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch,ceil(boxes*height_high*width_high,16)+16]，这里的每个anchor的obj的数值只有1个。",
+            "limits": "float16"
+        },
+        "classes_prob_low": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch,classes,ceil(boxes*height_low*width_low,16)+16] , 为便于内部计算已将每个anchor的score向16取整。",
+            "limits": "float16，height_low*width_low*Dtype_Size>=32 Byte"
+        },
+        "classes_prob_mid": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch,classes,ceil(boxes*height_mid*width_mid,16)+16] , 为便于内部计算已将每个anchor的score向16取整。",
+            "limits": "float16，height_low*width_low*Dtype_Size>=32 Byte"
+        },
+        "classes_prob_high": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch,classes,ceil(boxes*height_high*width_high,16)+16] , 为便于内部计算已将每个anchor的score向16取整。",
+            "limits": "float16，height_low*width_low*Dtype_Size>=32 Byte"
+        },
+        "img_info": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "原图信息：[batch,4]，4表示 netH、netW、scaleH、scaleW四 个维度。其中netH，netW为网络模型输入的 HW，scaleH，scaleW为原始图片的HW。",
+            "limits": "float16"
+        },
+        "box_out": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "[batch,6*post_nms_topn]，在其中的6表示x1, y1, x2, y2, score, label（类别），实际按box_out_num的数量输出。",
+            "limits": "float16"
+        },
+        "box_out_num": {
+            "classify": "OUTPUT",
+            "type_range": "int32",
+            "required": true,
+            "doc": "[batch,8,1,1]，数据类型为int32,8个数中仅第一个数有效，每个batch中有效框的数量，每个batch中有效框的数量最大为1024。",
+            "limits": "float16"
+        },
+        "biases_low": {
+            "classify": "ATTR",
+            "type_range": "ListFloat",
+            "required": true,
+            "doc": "[boxes*2]，其中2分别表示x（w)和y(h)方向，对应box1。",
+            "limits": "-"
+        },
+        "biases_mid": {
+            "classify": "ATTR",
+            "type_range": "ListFloat",
+            "required": true,
+            "doc": "[boxes*2]，其中2分别表示x（w)和y(h)方向，对应box2。",
+            "limits": "-"
+        },
+        "biases_high": {
+            "classify": "ATTR",
+            "type_range": "ListFloat",
+            "required": true,
+            "doc": "[boxes*2]，其中2分别表示x（w)和y(h)方向，对应box3。",
+            "limits": "-"
+        },
+        "boxes": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "每个grid的anbox的数量，默认为3。",
+            "limits": "-"
+        },
+        "coords": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "coords的数量，固定为4，表示x、y、h、w",
+            "limits": "固定为4"
+        },
+        "classes": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "类别数，默认为80。",
+            "limits": "最大1024"
+        },
+        "relative": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "在correct_region_boxes中表示是否为相对值，默认值为True。",
+            "limits": "True或者False"
+        },
+        "obj_threshold": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "有物体概率的阈值，对应于clsProb中的阈值，默认值为0.5。",
+            "limits": "[0,1]"
+        },
+        "pre_nms_topn": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "pre_nms_topn对应于multiClassNMS（对于每个类别，取前pre_nms_topn个数量进行处理，最大支持1024，默认值为1024。",
+            "limits": "最大1024"
+        },
+        "post_nms_topn": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "经过nms之后返回全部还是postTopK个框，最大为1024，默认值1024。",
+            "limits": "最大1024"
+        },
+        "score_threshold": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "每个类别的阈值，默认值为0.5",
+            "limits": "[0,1]"
+        },
+        "iou_threshold": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "交并比（Intersection over Union）阈值，默认值是0.45",
+            "limits": "[0,1]"
+        }
+    },
+    "Log": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "指数运算\n计算公式：\nif base>0: y = log_base(shift + scale * x)\nif base == -1: y = log_e(shift + scale * x)\n算子原型：tensorflow和caffe原型不一致，需要重新定义。",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "指数运算\n计算公式：\nif base>0: y = log_base(shift + scale * x)\nif base == -1: y = log_e(shift + scale * x)\n算子原型：tensorflow和caffe原型不一致，需要重新定义。",
+            "limits": "float16"
+        },
+        "base": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认为-1.0",
+            "limits": "base>0或者-1"
+        },
+        "scale": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认为1.0",
+            "limits": "-"
+        },
+        "shift": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认为0.0",
+            "limits": "-"
+        }
+    },
+    "LRN": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "normalization 的方法;\n计算公式：power(k + (alpha / n)*sum(square(x)),beta)",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "normalization 的方法;\n计算公式：power(k + (alpha / n)*sum(square(x)),beta)",
+            "limits": "float16"
+        },
+        "local_size": {
+            "classify": "ATTR",
+            "type_range": "uint",
+            "required": false,
+            "doc": "默认为5，必须是奇数（LRN only supports odd values for local_size），local_size不大于255",
+            "limits": "必须是奇数，且不大于255"
+        },
+        "alpha": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认为1.0",
+            "limits": "-"
+        },
+        "beta": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认为0.75",
+            "limits": "-"
+        },
+        "norm_region": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "0：ACROSS_CHANNELS \n1：WITHIN_CHANNEL \n默认为0，只支持 ACROSS_CHANNELS",
+            "limits": "只支持0"
+        },
+        "k": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认是1.0",
+            "limits": "-"
+        }
+    },
+    "MVN": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16, float32",
+            "required": true,
+            "doc": "输入Tensor",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16, float32",
+            "required": true,
+            "doc": "y=(x-mean(x))/std(x)",
+            "limits": "float16"
+        },
+        "normalize_variance": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "设为false时只减均值,默认为true,",
+            "limits": "True或者False"
+        },
+        "across_channels": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "设为true时就是CHW视为一个向量,默认为flase",
+            "limits": "True或者False"
+        },
+        "eps": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "Epsilon为了防止除零,默认值 1e-9",
+            "limits": "可以配置"
+        }
+    },
+    "Reduction": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16, float32",
+            "required": true,
+            "doc": "-",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16, float32",
+            "required": true,
+            "doc": "-",
+            "limits": "float16"
+        },
+        "operation": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "default = 1，含义如下：\n1：SUM\n2：ASUM\n3：SUMSQ\n4：MEAN",
+            "limits": "支持配置，配置范围1~4"
+        },
+        "axis": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "默认为0，表示从第几个维度开始 后面的维度全部reduction",
+            "limits": "[-rank(x), rank(x))"
+        },
+        "coeff": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认为1.0，输出的系数",
+            "limits": "支持配置"
+        }
+    },
+    "Split": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32,int8,uint8,int16,uint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "复制输入的blob 到多个节点",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32,int8,uint8,int16,uint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "复制输入的blob 到多个节点",
+            "limits": "-"
+        }
+    },
+    "SPP": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16, float32",
+            "required": true,
+            "doc": "根据输入的feature map确定pool的参数，依次输出1*1，2*2，4*4，…等平面大小的平面，多个pool结果依次排布",
+            "limits": "float16，H和W最大不能超过510"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16, float32",
+            "required": true,
+            "doc": "根据输入的feature map确定pool的参数，依次输出1*1，2*2，4*4，…等平面大小的平面，多个pool结果依次排布",
+            "limits": "float16"
+        },
+        "pyramid_height": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": true,
+            "doc": "金字塔的层数，其取值范围为[1,7)，且计算出来的Pooling的kernel_size和Pad_size需要满足caffe Pooling的约束（即Pad_size<kernel_size）",
+            "limits": "[1,7)"
+        },
+        "pool_method": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "0：max pooling\n1：avg pooling\n默认为max pooling",
+            "limits": "0,1"
+        }
+    },
+    "Threshold": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16，float32",
+            "required": true,
+            "doc": "输入与一个阈值相比较，大于则输出1，小于等于则输出0",
+            "limits": "float16"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16，float32",
+            "required": true,
+            "doc": "输入与一个阈值相比较，大于则输出1，小于等于则输出0",
+            "limits": "float16"
+        },
+        "threshold": {
+            "classify": "ATTR",
+            "type_range": "float",
+            "required": false,
+            "doc": "默认为0，输出比较的结果，1或0",
+            "limits": "-"
+        }
+    },
+    "Tile": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32,int8,uint8,int16,uint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "输入tensor",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32,int8,uint8,int16,uint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "输出tensor",
+            "limits": "-"
+        },
+        "axis": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "指定扩展的轴，默认为1",
+            "limits": "-"
+        },
+        "tiles": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": true,
+            "doc": "扩展的倍数，比如x shape [n,c,h,w]，axis=2，tiles=3，那么y shape [n,c,3*h,w]",
+            "limits": "-"
+        }
+    },
+    "ShuffleChannel": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16,float32,int8,uint8,int16,uint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "-",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32,int8,uint8,int16,uint16,int32,uint32,int64,uint64",
+            "required": true,
+            "doc": "-",
+            "limits": "-"
+        },
+        "group": {
+            "classify": "ATTR",
+            "type_range": "uint",
+            "required": false,
+            "doc": "必须大于0，且channel必须能被group整除，默认为1",
+            "limits": "必须大于0，且channel必须能被group整除"
+        }
+    },
+    "BatchedMatMul": {
+        "x1": {
+            "classify": "INPUT",
+            "type_range": "fp16",
+            "required": true,
+            "doc": "输入x1，维数必须大于2而小于等于8，如果adj_x1是False，表示[batch,…,M,K]；如果adj_x1是True，[batch,…,K,M]，其中batch,…, 需要与x2中的一致",
+            "limits": "-"
+        },
+        "x2": {
+            "classify": "INPUT",
+            "type_range": "fp16",
+            "required": true,
+            "doc": "输入x2，维数必须大于2而小于等于8，如果adj_x2是False，shape表示为[batch,…,K,N]；如果adj_x2是True，shape表示为[batch,…,N，K]，其中batch,…, 需要与x1中的一致",
+            "limits": "-"
+        },
+        "y": {
+            "classify": "OUTPUT",
+            "type_range": "fp16",
+            "required": true,
+            "doc": "输出y=x1*x2，Shape为[batch,…,M,N]",
+            "limits": "-"
+        },
+        "adj_x1": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "x2是否转置，默认值为False",
+            "limits": "-"
+        }
+    },
+    "LSTM": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "时间变化数据x，[T,N,input_size]",
+            "limits": "T最大支持256"
+        },
+        "cont": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "序列连续性标记，[T,N]",
+            "limits": "T最大支持256"
+        },
+        "w_x": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "x权重，维度为[input_size, 4×num_output]",
+            "limits": "-"
+        },
+        "bias": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "偏置，维度为[4×num_output]",
+            "limits": "-"
+        },
+        "w_h": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": true,
+            "doc": "h权重，维度为[4×num_output, num_output]",
+            "limits": "-"
+        },
+        "x_static": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": false,
+            "doc": "时间不变的静态数据xstatic[N,input_size]; 接口当前保留",
+            "limits": "-"
+        },
+        "h_0": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": false,
+            "doc": "expose_hidden==True时输入，初始隐藏状态[1,N,num_output]",
+            "limits": "-"
+        },
+        "c_0": {
+            "classify": "INPUT",
+            "type_range": "float16,float32",
+            "required": false,
+            "doc": "expose_hidden==True时输入，初始cell状态 [1,N,num_output]",
+            "limits": "-"
+        },
+        "w_x_static": {
+            "classify": "INPUT",
+            "type_range": "float16",
+            "required": false,
+            "doc": "x_static权重，维度为[4×num_output,input_size]; 接口当前保留",
+            "limits": "-"
+        },
+        "h": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": true,
+            "doc": "输出的tensor (T×N×num_output)",
+            "limits": "-"
+        },
+        "h_t": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": false,
+            "doc": "最后timestep的隐藏状态 (1×N×num_output)",
+            "limits": "-"
+        },
+        "c_t": {
+            "classify": "OUTPUT",
+            "type_range": "float16,float32",
+            "required": false,
+            "doc": "最后timestep的cell状态 (1×N×num_output)",
+            "limits": "-"
+        },
+        "num_output": {
+            "classify": "ATTR",
+            "type_range": "uint",
+            "required": true,
+            "doc": "输出特征数，必须大于0",
+            "limits": "必须大于0"
+        },
+        "expose_hidden": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "是否有初始隐藏状态和cell初始状态，默认为False",
+            "limits": "-"
+        }
+    },
+    "ArgMax": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "fp32,fp16",
+            "required": true,
+            "doc": "输入的tensor",
+            "limits": "-"
+        },
+        "indices": {
+            "classify": "OUTPUT",
+            "type_range": "int32",
+            "required": false,
+            "doc": "输出的最大值的索引",
+            "limits": "-"
+        },
+        "values": {
+            "classify": "OUTPUT",
+            "type_range": "fp32,fp16",
+            "required": false,
+            "doc": "输出的tensor，包含最大值索引或最大值",
+            "limits": "-"
+        },
+        "axis": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "指定在输入tensor做削减的轴，如果不提供此参数，则每个batch求topk",
+            "limits": "-"
+        },
+        "out_max_val": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "是否需要输出最大值。\n•如果是True，且有2个TOP，则输出最大值和索引：\nlayer { \n  name: \"argmax\" \n  type: \"ArgMax\" \n  bottom: \"data\" \n  top: \"indices\" \n  top: \"values\" \n  argmax_param { \n    out_max_val: True \n    top_k: 1 \n  }\n•如果是True，且有1个TOP，则输出最大值：\nlayer { \n  name: \"argmax\" \n  type: \"ArgMax\" \n  bottom: \"data\" \n  top: \"values\" \n  argmax_param { \n    out_max_val: True \n    top_k: 1 \n    axis: 1 \n  } \n}\n•如果是False，则输出索引：\nlayer { \n  name: \"argmax\" \n  type: \"ArgMax\" \n  bottom: \"data\" \n  top: \"indices\" \n  argmax_param { \n    out_max_val: False \n    top_k: 1 \n    axis: 1 \n  } \n}\n",
+            "limits": "-"
+        },
+        "topk": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "默认是1，表示每个axis轴中前topk个数（取值大于等于1），其取值范围必须在[1,x.shape(axis)]，对应于caffe中的top_k",
+            "limits": "当前只支持1"
+        }
+    },
+    "RNN": {
+        "x": {
+            "classify": "INPUT",
+            "type_range": "fp16",
+            "required": true,
+            "doc": "时间变化数据x，(T×N×...)",
+            "limits": "T最大支持256"
+        },
+        "cont": {
+            "classify": "INPUT",
+            "type_range": "fp16",
+            "required": true,
+            "doc": "序列连续性标记cont，(T×N）",
+            "limits": "T最大支持256"
+        },
+        "x_static": {
+            "classify": "OPTIONAL_INPUT",
+            "type_range": "fp16",
+            "required": false,
+            "doc": "时间不变的静态数据xstatic,(N×...)",
+            "limits": "-"
+        },
+        "h_0": {
+            "classify": "OPTIONAL_INPUT",
+            "type_range": "fp32,fp16",
+            "required": false,
+            "doc": "初始隐藏状态 (1×N×num_output)",
+            "limits": "-"
+        },
+        "w_xh": {
+            "classify": "INPUT",
+            "type_range": "fp16",
+            "required": true,
+            "doc": "xh权重，维度为[input_size,num_output]",
+            "limits": "-"
+        },
+        "bias_h": {
+            "classify": "INPUT",
+            "type_range": "fp32,fp16",
+            "required": true,
+            "doc": "偏置，维度为[num_output,]",
+            "limits": "-"
+        },
+        "w_sh": {
+            "classify": "INPUT",
+            "type_range": "fp16",
+            "required": false,
+            "doc": "sh权重，维度为[input_size,num_output]",
+            "limits": "-"
+        },
+        "w_hh": {
+            "classify": "INPUT",
+            "type_range": "fp16",
+            "required": true,
+            "doc": "hh权重，维度为[num_output,num_output]",
+            "limits": "-"
+        },
+        "w_ho": {
+            "classify": "INPUT",
+            "type_range": "fp16",
+            "required": true,
+            "doc": "ho权重，维度为[num_output,num_output]",
+            "limits": "-"
+        },
+        "bias_o": {
+            "classify": "INPUT",
+            "type_range": "fp32,fp16",
+            "required": true,
+            "doc": "偏置，维度为[num_output,]",
+            "limits": "-"
+        },
+        "o": {
+            "classify": "OUTPUT",
+            "type_range": "fp32,fp16",
+            "required": true,
+            "doc": "输出的tensor (T×N×num_output)",
+            "limits": "-"
+        },
+        "h_t": {
+            "classify": "OUTPUT",
+            "type_range": "fp32,fp16",
+            "required": true,
+            "doc": "最后timestep的隐藏状态 (1×N×num_output)",
+            "limits": "-"
+        },
+        "expose_hidden": {
+            "classify": "ATTR",
+            "type_range": "bool",
+            "required": false,
+            "doc": "是否暴露隐藏状态，默认false",
+            "limits": "-"
+        },
+        "num_output": {
+            "classify": "ATTR",
+            "type_range": "int",
+            "required": false,
+            "doc": "输出特征数，如果为0，则在shape中取值",
+            "limits": "-"
+        }
+    }
+}laskdfjljsadf
