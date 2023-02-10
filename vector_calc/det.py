@@ -46,7 +46,7 @@ from numpy.random import rand, seed
 from numpy.linalg import det
 #生成随机行列式
 seed(100)
-n = 22 
+n = 3200
 A = rand(n ** 2)
 mat = A.reshape(n, n)
 #打印numpy函数和自定义函数的结果
